@@ -1,0 +1,70 @@
+/* 
+Vehicles
+vehicleId	year	make	model	inStockDate				soldDate				dealerId	sellPrice
+1			2018	Toyota	Corolla	2020-07-31 09:12:35		2020-08-15 15:24:09		01			16500
+2			2017	Ford	F-150	2020-07-31 09:12:35		2020-08-15 15:24:09		02			34700
+...
+
+Dealers
+dealerId	dealerName
+01			CarGurus
+02			CarMax
+...
+
+Q1: How many unique make do we have in the Vehicles table?
+Q2: How many vehicles in total for each dealer in the Vehicle table? Order from highest to lowest. (data may have duplication)
+Q3: How many vehicles did we sell for for each make for the past month? 
+Q4: How much total sales amount does each dealer have for the last month? Order from highest to lowest. (dealers may not have sales) (price is integer)
+
+Q1:
+SELECT	
+	COUNT(DISTINCT make)
+FROM
+	Vehicles
+
+Q2:
+SELECT
+	make
+	,COUNT(DISTINCT vehicleId)
+FROM
+	Vehicles
+GROUP BY
+	make
+ORDER BY
+	COUNT(DISTINCT vehicleId) DESC
+
+Q3:
+SELECT
+	make
+	,COUNT(DISTINCT vehicleId)
+FROM 
+	Vehicles
+WHERE
+	DATEPART(m, soldDate) = DATEPART(m, DATEADD(m, -1, getdate()))
+AND 
+	DATEPART(yyyy, soldDate) = DATEPART(yyyy, getdate())
+GROUP BY
+	make
+
+Q4:
+SELECT
+	d.dealerName
+	,SUM(CAST(sub.sellPrice AS float)) AS totalSales
+FROM
+	Dealers AS d
+LEFT JOIN 
+	(
+	SELECT *
+	FROM Vehicles
+	WHERE DATEPART(m, soldDate) = DATEPART(m, DATEADD(m, -1, getdate()))
+	AND DATEPART(yyyy, soldDate) = DATEPART(yyyy, getdate())
+	) AS sub
+ON 
+	d.dealerId = sub.dealerId
+GROUP BY
+	d.dealerName
+ORDER BY
+	totalSales DESC
+
+
+*/
